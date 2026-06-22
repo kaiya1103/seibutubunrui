@@ -39,7 +39,7 @@ h1{
     font-weight:bold;
 }
 
-#nextBtn{
+#nextBtn, .action-btn{
     margin-top:20px;
     padding:12px 25px;
     font-size:18px;
@@ -84,22 +84,23 @@ h1{
 
 <div id="quizArea">
 
-<div id="count"></div>
+    <div id="quizMain">
+        <div id="count"></div>
+        <div id="question"></div>
+        <div id="choices"></div>
+        <div id="result"></div>
+        <button id="nextBtn" style="display:none;">次の問題</button>
+    </div>
 
-<div id="question"></div>
-
-<div id="choices"></div>
-
-<div id="result"></div>
-
-<button id="nextBtn" style="display:none;">
-次の問題
-</button>
+    <div id="resultArea" style="display:none;">
+        <h2>終了！</h2>
+        <p id="scoreText"></p>
+        <div id="reviewSection"></div>
+    </div>
 
 </div>
 
 <script>
-
 
 const params = new URLSearchParams(location.search);
 const setName = params.get("set") || "animals";
@@ -194,6 +195,7 @@ function checkAnswer(index){
         "inline-block";
 }
 
+// 次の問題ボタンのイベント（一度登録すれば、復習モードでも共通で動きます）
 document.getElementById("nextBtn").onclick = ()=>{
 
     current++;
@@ -207,30 +209,27 @@ document.getElementById("nextBtn").onclick = ()=>{
 };
 
 function finishQuiz(){
+    // クイズメイン画面を隠し、終了画面を表示する
+    document.getElementById("quizMain").style.display = "none";
+    document.getElementById("resultArea").style.display = "block";
 
-    let html = `
-        <h2>終了！</h2>
-        <p>${quizData.length}問中 ${score}問正解</p>
-    `;
+    // スコアの表示
+    document.getElementById("scoreText").textContent = `${quizData.length}問中 ${score}問正解`;
+
+    const reviewSection = document.getElementById("reviewSection");
 
     if(wrongQuestions.length > 0){
-
-        html += `
+        reviewSection.innerHTML = `
             <p>間違えた問題：${wrongQuestions.length}問</p>
-
-            <button onclick="reviewWrongQuestions()">
+            <button class="action-btn" onclick="reviewWrongQuestions()">
                 間違えた問題を復習
             </button>
         `;
-
     }else{
-
-        html += `
+        reviewSection.innerHTML = `
             <p>全問正解です！</p>
         `;
     }
-
-    document.getElementById("quizArea").innerHTML = html;
 }
 
 function reviewWrongQuestions(){
@@ -241,30 +240,11 @@ function reviewWrongQuestions(){
 
     current = 0;
     score = 0;
-
     wrongQuestions = [];
 
-    document.getElementById("quizArea").innerHTML = `
-        <div id="count"></div>
-        <div id="question"></div>
-        <div id="choices"></div>
-        <div id="result"></div>
-        <button id="nextBtn" style="display:none;">
-            次の問題
-        </button>
-    `;
-
-    document.getElementById("nextBtn").onclick = ()=>{
-
-        current++;
-
-        if(current >= quizData.length){
-            finishQuiz();
-            return;
-        }
-
-        showQuestion();
-    };
+    // 表示をクイズメイン画面に戻し、終了画面を隠す
+    document.getElementById("quizMain").style.display = "block";
+    document.getElementById("resultArea").style.display = "none";
 
     showQuestion();
 }
